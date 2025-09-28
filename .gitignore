@@ -1,0 +1,20 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+.venv/
+
+# Editor configs
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+
+# pytest cache
+.pytest_cache/
+
+# Streamlit local config
+.streamlit/
