@@ -8,7 +8,13 @@ SRC = PROJECT_ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from bank.manager import AccountManager
+try:
+    from bank.manager import AccountManager  # type: ignore
+except Exception:  # pragma: no cover - fallback for direct execution without editable install
+    # attempt to append src again in edge cases
+    if str(SRC) not in sys.path:
+        sys.path.insert(0, str(SRC))
+    from bank.manager import AccountManager  # type: ignore
 
 
 def fmt(amount: float) -> str:
@@ -29,7 +35,7 @@ def run_app():
     mgr: AccountManager = st.session_state.mgr
 
     # Page config and branding
-    st.set_page_config(page_title="Sterling Private Bank — Online Banking", layout="wide")
+    st.set_page_config(page_title="Aurora Nexus Bank — Online Banking", layout="wide")
 
     # Inject custom CSS to give a conservative, professional banking look (deep navy + gold accent)
     css = """
@@ -63,7 +69,7 @@ def run_app():
     # Top navigation / brand bar
     nav_html = """
     <div class='top-nav'>
-        <div class='brand'>Sterling Private Bank <span class='brand-sub'>— Private & Business Banking</span></div>
+        <div class='brand'>Aurora Nexus Bank <span class='brand-sub'>— Private & Business Banking</span></div>
         <div class='nav-actions'>
             <button onclick="window.location.href='#'">Login</button>
         </div>
