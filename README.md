@@ -4,18 +4,20 @@
 The CLI Banking Application is a simple command-line tool that allows users to manage their bank accounts. Users can create accounts, deposit and withdraw funds, transfer money between accounts, and check their balances. This project is designed to practice object-oriented programming and command-line interface development in Python.
 
 ## Features
-Sterling Private Bank — CLI Banking App
+Aurora Nexus Bank — CLI Banking App
 
 Short summary
 ---------------
-Sterling Private Bank — a minimal, well-tested CLI banking prototype with an optional Streamlit frontend. This project demonstrates clean OOP design, test coverage, and a small UI for demonstration.
+Aurora Nexus Bank — a minimal, well-tested CLI banking prototype with an optional Streamlit frontend. This project demonstrates clean OOP design, test coverage, a small UI layer, and domain-specific exception handling.
 
 Why this is review-ready
 ------------------------
 - Clear domain model: `BankAccount` encapsulates core operations (deposit, withdraw, transfer).
 - Manager class: `AccountManager` provides a thin in-memory persistence layer and simple API.
-- Tests: unit tests for accounts and manager (`pytest`) with project helper (`tests/conftest.py`) ensuring imports work.
+- Domain exceptions: Distinct custom exceptions (`bank.exceptions`) enable precise error handling.
+- Tests: pytest-based tests for accounts and manager with fixtures.
 - Optional frontend: `streamlit_app.py` provides a polished demo UI.
+- Tooling: Ruff (lint/format), mypy (typing), pytest + coverage configuration.
 
 Quick start (macOS / Linux)
 ---------------------------
@@ -69,6 +71,7 @@ Project layout
 - `src/` — application code
   - `bank/account.py` — domain model `BankAccount`
   - `bank/manager.py` — `AccountManager` in-memory storage
+  - `bank/exceptions.py` — domain-specific exception types
   - `cli.py` — interactive terminal UI
 - `streamlit_app.py` — optional Streamlit demo (in-memory state)
 - `tests/` — unit tests and `conftest.py` that adds `src/` to PYTHONPATH for pytest
@@ -79,11 +82,29 @@ Notes for reviewers
 - The frontend is intentionally small and keeps data in memory. For production, persist to a database (SQLite) and add authentication.
 - Tests are small but cover core behaviors and edge cases (invalid amounts, transfers, duplicates).
 
+Quality & tooling
+-----------------
+Static analysis & formatting (installed via dev dependencies):
+```bash
+ruff check src tests   # lint
+ruff format src tests  # format (or use --check in CI)
+mypy src                # type checking
+pytest -q --cov=src     # tests + coverage
+```
+
+Custom exception taxonomy (in `bank/exceptions.py`):
+- `NegativeAmountError` – non-positive amount provided.
+- `InsufficientFundsError` – withdrawal/transfer exceeds balance.
+- `DuplicateAccountError` – account id already exists.
+- `AccountNotFoundError` – source/destination not found.
+
 Next recommended improvements
----------------------------
-- Add persistence (JSON/SQLite) and tests for persistence.
-- Add typed interfaces and docs for public methods.
-- Add CI (GitHub Actions) to run tests on PRs.
+-----------------------------
+- Add persistence (SQLite via SQLModel or Peewee) and persistence tests.
+- Switch monetary values to `decimal.Decimal` with a fixed context.
+- Add API layer (FastAPI) for RESTful access; reuse domain model.
+- Extend CI to include lint/type checks & coverage threshold.
+- Add pre-commit hooks for Ruff + mypy + pytest subset.
 
 License
 -------

@@ -1,7 +1,12 @@
 """Simple CLI for the banking app.
 
-Supports running as a script (python src/cli.py) and as a module (python -m src.cli).
-The module tries a package-relative import first and falls back to adding the src/ dir to sys.path.
+Execution modes:
+    python -m src.cli
+    python src/cli.py
+
+If the package is installed (``pip install -e .``) the relative import path is
+used. Otherwise we fall back to injecting the local ``src`` path for an ad‑hoc
+run. For a cleaner environment prefer installing in editable mode.
 """
 
 from __future__ import annotations
@@ -10,26 +15,28 @@ from pathlib import Path
 import sys
 
 
-try:
-    # When executed as module: python -m src.cli
-    from .bank.manager import AccountManager
-except Exception:
-    # Fallback when executed as script: python src/cli.py
+try:  # First attempt: package-relative import (installed or run as module)
+    from .bank.manager import AccountManager  # type: ignore
+    from .bank import exceptions as exc  # type: ignore
+except Exception:  # pragma: no cover - fallback path
     SRC_DIR = Path(__file__).resolve().parent
     if str(SRC_DIR) not in sys.path:
         sys.path.insert(0, str(SRC_DIR))
-    from bank.manager import AccountManager
+    from bank.manager import AccountManager  # type: ignore
+    from bank import exceptions as exc  # type: ignore
 
 
-def _float_input(prompt: str, default: float = 0.0) -> float:
-    s = input(prompt).strip()
-    if s == "":
-        return default
-    try:
-        return float(s)
-    except ValueError:
-        print("Invalid number, try again.")
-        return _float_input(prompt, default)
+def _float_input(prompt: str, default: float | None = None) -> float:
+    """Prompt user for a positive float (or any float if default provided)."""
+    while True:
+        s = input(prompt).strip()
+        if s == "" and default is not None:
+            return default
+        try:
+            value = float(s)
+            return value
+        except ValueError:
+            print("Invalid number, try again.")
 
 
 def main() -> None:
@@ -44,6 +51,9 @@ def main() -> None:
                 aid = input("Account id: ").strip()
                 owner = input("Owner (optional): ").strip()
                 initial = _float_input("Initial (default 0): ", 0.0)
+                if initial < 0:
+                    print("Initial balance cannot be negative.")
+                    continue
                 acct = mgr.create(aid, owner, initial)
                 print(f"Created {acct.name} with balance {acct.balance}")
             elif cmd == "2":
@@ -56,6 +66,9 @@ def main() -> None:
             elif cmd == "3":
                 aid = input("Account id: ").strip()
                 amt = _float_input("Amount: ")
+                if amt <= 0:
+                    print("Amount must be positive.")
+                    continue
                 a = mgr.get(aid)
                 if not a:
                     print("Account not found")
@@ -65,6 +78,9 @@ def main() -> None:
             elif cmd == "4":
                 aid = input("Account id: ").strip()
                 amt = _float_input("Amount: ")
+                if amt <= 0:
+                    print("Amount must be positive.")
+                    continue
                 a = mgr.get(aid)
                 if not a:
                     print("Account not found")
@@ -75,6 +91,9 @@ def main() -> None:
                 src = input("From id: ").strip()
                 dst = input("To id: ").strip()
                 amt = _float_input("Amount: ")
+                if amt <= 0:
+                    print("Amount must be positive.")
+                    continue
                 mgr.transfer(src, dst, amt)
                 print("Transfer completed.")
             elif cmd == "6":
@@ -83,8 +102,12 @@ def main() -> None:
                     print(f"{a.name}: {a.balance} {('- ' + owner) if owner else ''}")
             else:
                 print("Unknown command")
-        except Exception as e:
-            print("Error:", e)
+        except Exception as e:  # broad catch to keep CLI interactive
+            # Provide friendlier labels for known domain errors.
+            prefix = "Error"
+            if hasattr(e, "__class__") and e.__class__.__name__.endswith("Error"):
+                prefix = e.__class__.__name__
+            print(f"{prefix}: {e}")
 
 
 if __name__ == "__main__":

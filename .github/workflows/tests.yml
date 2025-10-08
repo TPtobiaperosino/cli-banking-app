@@ -1,4 +1,4 @@
-name: tests
+name: quality
 
 on:
   push:
@@ -7,21 +7,34 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
+  build-and-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11"]
+        python-version: ["3.11", "3.12"]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+          cache: pip
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      - name: Run tests
+          pip install -r requirements.txt ruff mypy pytest-cov types-requests
+      - name: Lint (Ruff)
         run: |
-          python -m pytest -q
+          ruff check src tests
+      - name: Type check (mypy)
+        run: |
+          mypy src
+      - name: Run tests with coverage
+        run: |
+          pytest -q --cov=src --cov-report=term-missing --cov-fail-under=90
+      - name: Upload coverage report (artifact)
+        if: ${{ success() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.python-version }}
+          path: ./.coverage

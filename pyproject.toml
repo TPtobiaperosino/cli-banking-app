@@ -1,15 +1,51 @@
 [tool.poetry]
 name = "cli-banking-app"
 version = "0.1.0"
-description = "A simple command-line banking application for managing bank accounts."
+description = "A simple command-line and Streamlit banking application for managing bank accounts (in-memory)."
 authors = ["Your Name <your.email@example.com>"]
 license = "MIT"
+readme = "README.md"
+packages = [
+	{ include = "bank", from = "src" }
+]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+# Minimum Python version aligned with CI matrix
+python = ">=3.11,<4.0"
+streamlit = "^1.31.0"
+pandas = "^2.2.2"
+requests = "^2.31.0"
 
-[tool.poetry.dev-dependencies]
-pytest = "^6.0"
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4"
+pytest-cov = "^4.1"
+ruff = "^0.5.0"
+mypy = "^1.10.0"
+types-requests = "^2.31.0"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E203", "E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+
+[tool.mypy]
+python_version = "3.11"
+strict = false
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unreachable = true
+disallow_untyped_defs = false
+exclude = ["tests/"]
+
+[tool.pytest.ini_options]
+addopts = "-q --strict-markers"
+testpaths = ["tests"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
