@@ -77,11 +77,6 @@ Project layout
 - `tests/` — unit tests and `conftest.py` that adds `src/` to PYTHONPATH for pytest
 - `requirements.txt`, `pyproject.toml` — dependencies and project metadata
 
-Notes for reviewers
--------------------
-- The frontend is intentionally small and keeps data in memory. For production, persist to a database (SQLite) and add authentication.
-- Tests are small but cover core behaviors and edge cases (invalid amounts, transfers, duplicates).
-
 Quality & tooling
 -----------------
 Static analysis & formatting (installed via dev dependencies):
@@ -98,18 +93,3 @@ Custom exception taxonomy (in `bank/exceptions.py`):
 - `DuplicateAccountError` – account id already exists.
 - `AccountNotFoundError` – source/destination not found.
 
-Next recommended improvements
------------------------------
-- Add persistence (SQLite via SQLModel or Peewee) and persistence tests.
-- Switch monetary values to `decimal.Decimal` with a fixed context.
-- Add API layer (FastAPI) for RESTful access; reuse domain model.
-- Extend CI to include lint/type checks & coverage threshold.
-- Add pre-commit hooks for Ruff + mypy + pytest subset.
-
-License
--------
-MIT — see `LICENSE` file.
-
-Contact
--------
-For questions about design or implementation, open an issue or contact the author.
